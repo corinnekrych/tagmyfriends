@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Page</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css"/>
+    <link rel="stylesheet" href="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.min.css"/>
+    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+    
+
+    <script src="js/grails/mobile/event.js"></script>
+    <script src="js/grails/mobile/mvc/model.js"></script>
+    <script src="js/grails/mobile/mvc/controller.js"></script>
+    <script src="js/grails/mobile/mvc/view.js"></script>
+    <script src="js/grails/mobile/storage/store.js"></script>
+    <script src="js/grails/mobile/feed/online.js"></script>
+    <script src="js/grails/mobile/feed/offline.js"></script>
+    <script src="js/grails/mobile/feed/feed.js"></script>
+    <script src="js/grails/mobile/helper/toObject.js"></script>
+    <script src="js/grails/mobile/sync/syncmanager.js"></script>
+    <script src="js/grails/mobile/mvc/manager.js"></script>
+    <script src="js/tagmyfriends/view/friend-view.js"></script>
+    <script src="js/tagmyfriends/friend-bootstrap.js"></script>
+    <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
+    <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.core.min.js"></script>
+    <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.mode.datebox.min.js"></script>
+</head>
+
+<body>
+<section data-role="page" id="section-list-friends">
+    <div data-role="header" data-position="fixed">
+        
+        <h1>Friend</h1>
+        
+    </div>
+    
+        <div data-role="content" id="list-friends-parent">
+            
+            <ul data-role="listview" data-inset="true" data-filter="true" id="list-friends">
+            </ul>
+        </div>
+        
+        <div data-role="footer" data-position="fixed">
+            <div data-role="navbar">
+                <ul>
+                    <li><a href="#section-show-friend" data-transition="slide" data-role="button"
+                           data-icon="plus">Add</a></li>
+                </ul>
+            </div>
+        </div>
+</section>
+
+<section data-role="page" id="section-show-friend">
+    <div data-role="header" id="show-friend" data-position="fixed">
+        <a href="#section-list-friends" data-transition="slide" data-icon="arrow-l">Cancel</a>
+
+        <h1>Friend</h1>
+    </div>
+    <div id="form-update-friend">
+        <ul data-role="listview" data-inset="true">
+            
+            <li data-role="fieldcontain">
+                
+                <label for="input-friend-firstname">Firstname</label>
+                <input type="text" name="firstname" id="input-friend-firstname" value=""/>
+                
+            </li>
+            
+            <li data-role="fieldcontain">
+                
+                <label for="input-friend-lastname">Lastname</label>
+                <input type="text" name="lastname" id="input-friend-lastname" value=""/>
+                
+            </li>
+            
+            <li data-role="fieldcontain">
+                
+                <label for="input-friend-registrationDate">Registration Date</label>
+                <input type="text" name="registrationDate" id="input-friend-registrationDate" value=""
+                       data-role="datebox" data-options='{"mode":"datebox", "useNewStyle":true}'/>
+                
+            </li>
+            
+        </ul>
+        
+        
+        <input type="hidden" name="id" id="input-friend-id"/>
+        <input type="hidden" name="version" id="input-friend-version"/>
+        <input type="hidden" name="class" id="input-friend-class"/>
+    </div>
+    
+    <div data-role="footer" data-position="fixed">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#section-list-friends" data-transition="slide" data-role="button"
+                       data-icon="delete" id="delete-friend">Delete</a></li>
+                <li><a href="#section-list-friends" data-transition="slide" data-icon="save"
+                       id="submit-friend">Save</a></li>
+            </ul>
+        </div>
+    </div>
+</section>
+</body>
+</html>
