@@ -62,6 +62,9 @@ grails.hibernate.cache.queries = false
 environments {
     development {
         grails.logging.jul.usebridge = true
+        phonegapbuild.username="corinnekrych@gmail.com"
+        phonegapbuild.password="password"
+        phonegapbuild.phonegapversion="2.1.0"
     }
     production {
         grails.logging.jul.usebridge = false

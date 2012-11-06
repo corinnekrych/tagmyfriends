@@ -4,19 +4,22 @@
 var tagmyfriends = tagmyfriends || {};
 tagmyfriends.view = tagmyfriends.view || {};
 
-tagmyfriends.view.placeview = function (model, elements) {
+tagmyfriends.view.checkinview = function (model, elements) {
 
     var that = grails.mobile.mvc.view(model, elements);
     
     // Register events
+    that.model.listedDependentItems.attach(function (data) {
+        renderDependentList();
+    });
     that.model.listedItems.attach(function (data) {
         renderList();
     });
 
     that.model.createdItem.attach(function (data) {
         renderElement(data.item);
-        $('#list-places').listview('refresh');
-    	
+        $('#list-checkins').listview('refresh');
+        mapServiceList.refreshCenterZoomMap();
     });
 
     that.model.updatedItem.attach(function (data) {
@@ -24,8 +27,9 @@ tagmyfriends.view.placeview = function (model, elements) {
     });
 
     that.model.deletedItem.attach(function (data) {
-        $('#place' + data.item.id + '-in-list').parents('li').remove();
-        
+        $('#checkin' + data.item.id + '-in-list').parents('li').remove();
+        mapServiceList.removeMarker(data.item.id);
+        mapServiceList.refreshCenterZoomMap();
     });
 
     // user interface actions
@@ -35,9 +39,10 @@ tagmyfriends.view.placeview = function (model, elements) {
     });
 
     that.elements.save.live("click tap", function () {
-        var obj = grails.mobile.helper.toObject($("#form-update-place").find("input, select"));
+        var obj = grails.mobile.helper.toObject($("#form-update-checkin").find("input, select"));
+
         var newElement = {
-            place: JSON.stringify(obj)
+            checkin: JSON.stringify(obj)
         };
         if (obj.id === "") {
             that.createButtonClicked.notify(newElement);
@@ -47,7 +52,7 @@ tagmyfriends.view.placeview = function (model, elements) {
     });
 
     that.elements.remove.live("click tap", function () {
-        that.deleteButtonClicked.notify({ id: $('#input-place-id').val() });
+        that.deleteButtonClicked.notify({ id: $('#input-checkin-id').val() });
     });
 
     // Detect online/offline from browser
@@ -72,6 +77,8 @@ tagmyfriends.view.placeview = function (model, elements) {
         var url = $(e.target).attr("data-url");
         var matches = url.match(/\?id=(.*)/);
 
+        that.editButtonClicked.notify();
+
         if (matches) {
             showElement(matches[1]);
         } else {
@@ -80,19 +87,23 @@ tagmyfriends.view.placeview = function (model, elements) {
     });
 
     var createElement = function () {
-        resetForm("form-update-place");
+        resetForm("form-update-checkin");
         
-        $("#delete-place").hide();
+        $("#delete-checkin").hide();
     };
 
     var showElement = function (id) {
-        resetForm("form-update-place");
+        resetForm("form-update-checkin");
         var element = that.model.items[id];
+
+        $('select[data-gorm-relation="many-to-one"][name="place"]').val(element.place.id);
+        $('select[data-gorm-relation="many-to-one"][name="place"]').selectmenu('refresh');
+
         $.each(element, function (name, value) {
-            $('#input-place-' + name).val(value);
+            $('#input-checkin-' + name).val(value);
         });
         
-        $("#delete-place").show();
+        $("#delete-checkin").show();
     };
 
     var resetForm = function (form) {
@@ -104,25 +115,58 @@ tagmyfriends.view.placeview = function (model, elements) {
 
     var renderList = function () {
         
-        $('#list-places').empty();
+        $('#list-checkins').empty();
         var key, items = model.getItems();
         for (key in items) {
             renderElement(items[key]);
         }
-        $('#list-places').listview('refresh');
+        $('#list-checkins').listview('refresh');
         
+    };
+
+
+
+    var refreshSelectDropDown = function (select, newOptions) {
+        var options = null;
+        if(select.prop) {
+            options = select.prop('options');
+        }
+        else {
+            options = select.attr('options');
+        }
+        $('option', select).remove();
+
+        $.each(newOptions, function(val, text) {
+            options[options.length] = new Option(text, val);
+        });
+        select.val(options[0]);
+        select.selectmenu('refresh');
+    }
+
+    var renderDependentList = function () {
+
+        var manyToOneSelectForPlace = $('select[data-gorm-relation="many-to-one"][name="place"]');
+        var options = {};
+        var key, items = model.getDependentItems();
+        $.each(items, function() {
+            var key = this.id;
+            var value = this.name;
+            options[key] = value;
+        });
+
+        refreshSelectDropDown(manyToOneSelectForPlace, options)
     };
 
     var renderElement = function (element) {
         if (element.offlineAction !== 'DELETED') {
-            var a = $('<a>').attr({ href: '#section-show-place?id=' + element.id });
-            a.attr({id : 'place' + element.id + '-in-list'});
+            var a = $('<a>').attr({ href: '#section-show-checkin?id=' + element.id });
+            a.attr({id : 'checkin' + element.id + '-in-list'});
             a.attr({'data-transition': 'fade' });
             a.text(getText(element));
             if (element.offlineStatus === "NOT-SYNC") {
-                $("#list-places").append($('<li data-theme="e">').append(a));
+                $("#list-checkins").append($('<li data-theme="e">').append(a));
             } else {
-                $("#list-places").append($('<li>').append(a));
+                $("#list-checkins").append($('<li>').append(a));
             }
             
         }

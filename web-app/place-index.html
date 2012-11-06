@@ -7,19 +7,8 @@
     <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css"/>
     <link rel="stylesheet" href="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.min.css"/>
     <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-    
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
-    <style type="text/css">
-        .visible {
-            display: inline;
-        }
 
-        .invisible {
-            display: none;
-        }
-    </style>
     <script src="js/grails/mobile/map/googleMapService.js"></script>
-    
 
     <script src="js/grails/mobile/event.js"></script>
     <script src="js/grails/mobile/mvc/model.js"></script>
@@ -33,7 +22,13 @@
     <script src="js/grails/mobile/sync/syncmanager.js"></script>
     <script src="js/grails/mobile/mvc/manager.js"></script>
     <script src="js/tagmyfriends/view/place-view.js"></script>
+    <script src="js/tagmyfriends/view/checkin-view.js"></script>
+    <script src="js/tagmyfriends/view/friend-view.js"></script>
+    <script src="js/tagmyfriends/configuration-bootstrap.js"></script>
+    <script src="js/tagmyfriends/checkin-bootstrap.js"></script>
+    <script src="js/tagmyfriends/friend-bootstrap.js"></script>
     <script src="js/tagmyfriends/place-bootstrap.js"></script>
+    <script src="js/tagmyfriends/manager-bootstrap.js"></script>
     <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
     <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.core.min.js"></script>
     <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.mode.datebox.min.js"></script>
@@ -43,21 +38,14 @@
 <section data-role="page" id="section-list-places">
     <div data-role="header" data-position="fixed">
         
-        <a data-transition="none" data-role="button" data-icon="grid" id="list-all-places">List</a>
-
         <h1>Place</h1>
-        <a data-transition="none" data-role="button" data-icon="star" id="map-all-places">Map</a>
         
     </div>
     
-    <div data-role="content" class="invisible" id="list-places-parent">
-        
+        <div data-role="content" id="list-places-parent">
+            
             <ul data-role="listview" data-inset="true" data-filter="true" id="list-places">
             </ul>
-        </div>
-        
-        <div data-role="content" class="visible" id="map-places-parent">
-            <div style="height: 70%;width: 100%;position: absolute;" id="map-canvas-list"></div>
         </div>
         
         <div data-role="footer" data-position="fixed">
@@ -88,16 +76,11 @@
             
         </ul>
         
-        <input type="hidden" name="longitude" id="input-place-longitude"/>
-        <input type="hidden" name="latitude" id="input-place-latitude"/>
-        
         
         <input type="hidden" name="id" id="input-place-id"/>
         <input type="hidden" name="version" id="input-place-version"/>
         <input type="hidden" name="class" id="input-place-class"/>
     </div>
-    
-    <div id="map-canvas-form" style="height: 70%;width: 100%;position: absolute;"></div>
     
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">

@@ -16,17 +16,17 @@ tagmyfriends.view.friendview = function (model, elements) {
     that.model.createdItem.attach(function (data) {
         renderElement(data.item);
         $('#list-friends').listview('refresh');
+        mapServiceList.refreshCenterZoomMap();
     });
 
     that.model.updatedItem.attach(function (data) {
-        renderList();
-
-//        var textDisplay = getText(data.item);
-//        $('#friend' + data.item.id + '-in-list').text(textDisplay);
+         renderList();
     });
 
     that.model.deletedItem.attach(function (data) {
         $('#friend' + data.item.id + '-in-list').parents('li').remove();
+        mapServiceList.removeMarker(data.item.id);
+        mapServiceList.refreshCenterZoomMap();
     });
 
     // user interface actions
@@ -104,6 +104,7 @@ tagmyfriends.view.friendview = function (model, elements) {
     
 
     var renderList = function () {
+        
         $('#list-friends').empty();
         var key, items = model.getItems();
         for (key in items) {
@@ -124,13 +125,14 @@ tagmyfriends.view.friendview = function (model, elements) {
             } else {
                 $("#list-friends").append($('<li>').append(a));
             }
+            
         }
     };
 
     var getText = function (data) {
         var textDisplay = '';
         $.each(data, function (name, value) {
-            if (name !== 'class' && name !== 'id' &&  name !== 'offlineAction' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
+            if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
                 textDisplay += value + ";";
             }
         });

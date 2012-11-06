@@ -19,15 +19,21 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
     that.model.createdItem.attach(function (data) {
         renderElement(data.item);
         \$('#list-${classNameLowerCase}s').listview('refresh');
+    	<% if (geolocated) { %>        
+        mapServiceList.refreshCenterZoomMap();
+		<% } %>
     });
 
     that.model.updatedItem.attach(function (data) {
-        var textDisplay = getText(data.item);
-        \$('#${classNameLowerCase}' + data.item.id + '-in-list').text(textDisplay);
+         renderList();
     });
 
     that.model.deletedItem.attach(function (data) {
         \$('#${classNameLowerCase}' + data.item.id + '-in-list').parents('li').remove();
+        <% if (geolocated) { %>
+        mapServiceList.removeMarker(data.item.id);
+        mapServiceList.refreshCenterZoomMap();
+        <% } %>
     });
 
     // user interface actions
@@ -95,9 +101,11 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
         resetForm("form-update-${classNameLowerCase}");
         <% if (geolocated) { %>
         navigator.geolocation.getCurrentPosition(function (position) {
-            \$("#input-${classNameLowerCase}-latitude").val(position.coords.latitude);
-            \$("#input-${classNameLowerCase}-longitude").val(position.coords.longitude);
-            mapServiceForm.showMap("map-canvas-form", position.coords.latitude, position.coords.longitude, true);
+            var coord = {
+                latitude : \$("#input-${classNameLowerCase}-latitude"),
+                longitude :\$("#input-${classNameLowerCase}-longitude")
+            };
+            mapServiceForm.showMap("map-canvas-form", position.coords.latitude, position.coords.longitude, coord);
         });
         <% } %>
         \$("#delete-${classNameLowerCase}").hide();
@@ -110,7 +118,11 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
             \$('#input-${classNameLowerCase}-' + name).val(value);
         });
         <% if (geolocated) { %>
-        mapServiceForm.showMap("map-canvas-form", element.latitude, element.longitude, true);
+        var coord = {
+            latitude : \$("#input-${classNameLowerCase}-latitude"),
+            longitude :\$("#input-${classNameLowerCase}-longitude")
+        };
+        mapServiceForm.showMap("map-canvas-form", element.latitude, element.longitude, coord);
         <% } %>
         \$("#delete-${classNameLowerCase}").show();
     };
@@ -144,9 +156,9 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
 
     var renderList = function () {
         <% if (geolocated) { %>
-        mapServiceList = grails.mobile.map.googleMapService();
         mapServiceList.emptyMap("map-canvas-list");
         <% } %>
+        \$('#list-${classNameLowerCase}s').empty();
         var key, items = model.getItems();
         for (key in items) {
             renderElement(items[key]);
@@ -158,14 +170,21 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
     };
 
     var renderElement = function (element) {
-        if (element.offlineStatus !== 'delete') {
+        if (element.offlineAction !== 'DELETED') {
             var a = \$('<a>').attr({ href: '#section-show-${classNameLowerCase}?id=' + element.id });
             a.attr({id : '${classNameLowerCase}' + element.id + '-in-list'});
             a.attr({'data-transition': 'fade' });
             a.text(getText(element));
-            \$("#list-${classNameLowerCase}s").append(\$('<li>').append(a));
+            if (element.offlineStatus === "NOT-SYNC") {
+                \$("#list-${classNameLowerCase}s").append(\$('<li data-theme="e">').append(a));
+            } else {
+                \$("#list-${classNameLowerCase}s").append(\$('<li>').append(a));
+            }
             <% if (geolocated) { %>
-            mapServiceList.addMarkers(element);
+            var id = element.id;
+            mapServiceList.addMarker(element, getText(element), function () {
+                \$("#${classNameLowerCase}" + id + "-in-list").click();
+            });
             <% } %>
         }
     };
@@ -173,7 +192,7 @@ ${packageName}.view.${classNameLowerCase}view = function (model, elements) {
     var getText = function (data) {
         var textDisplay = '';
         \$.each(data, function (name, value) {
-            if (name !== 'class' && name !== 'id' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
+            if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
                 textDisplay += value + ";";
             }
         });
