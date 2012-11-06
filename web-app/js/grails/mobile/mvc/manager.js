@@ -27,17 +27,23 @@ grails.mobile.mvc.manager = function (configuration) {
     var baseURL = configuration.baseURL;
     var namespace = configuration.namespace;
     var controllers = {};
-    var resolveNamespace = function (functionName) {
-        var that = {};
-        var namespaces = functionName.split(".");
-        var func = namespaces.pop();
-        var ns = namespaces.join('.');
-        if (ns === '') {
-            ns = 'window';
+    var resolveNamespace = function (functionPath) {
+        var namespaces = functionPath.split(".");
+        var funcName = namespaces.pop();
+        var parent = window;
+        namespaces.forEach(function (name) {
+          if (typeof parent != 'undefined') {
+            parent = parent[name];
+          }
+        });
+        if (typeof parent == 'undefined') {
+            throw new TypeError("'" + functionPath + "' does not exist");
         }
-        that.namespace = eval(ns);
-        that.function = func;
-        return that;
+        var func = parent[funcName];
+        if (typeof func == 'function') {
+            throw new TypeError("'" + functionPath + "' is not a function");
+        }
+        return func.bind(parent);
     };
 
     controllers = $.each(configuration.domain, function () {
@@ -52,7 +58,7 @@ grails.mobile.mvc.manager = function (configuration) {
         // create view for domain object
         var viewName = namespace + '.view.' + this.name + 'view';
         var funcToApply = resolveNamespace(viewName);
-        var view = funcToApply.namespace[funcToApply.function].call(funcToApply.namespace, model, this.view);
+        var view = funcToApply(model, this.view);
 
         // Create Feed
         var feed = grails.mobile.feed.feed(baseURL + this.name + '/', store);
