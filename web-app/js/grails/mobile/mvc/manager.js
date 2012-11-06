@@ -30,13 +30,15 @@ grails.mobile.mvc.manager = function (configuration) {
     var resolveNamespace = function (functionName) {
         var that = {};
         var namespaces = functionName.split(".");
-        var func = namespaces.pop();
-        var ns = namespaces.join('.');
-        if (ns === '') {
-            ns = 'window';
-        }
-        that.namespace = eval(ns);
-        that.function = func;
+        that.function = namespaces.pop();
+        that.namespace = window;
+        namespaces.forEach(function (name) {
+          if (typeof that.namespace == 'undefined') {
+            throw new TypeError("'" + functionName + "' does not exist");
+          } else {
+            that.namespace = that.namespace[name];
+          }
+        });
         return that;
     };
 
