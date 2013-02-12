@@ -17,122 +17,103 @@
  * Controller sends asynchronous call to server if needed and changes
  * the model.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.mvc = grails.mobile.mvc || {};
+define(["grails/mobile/event"],
+function(event) {
+    var _event = event;
+    return function(feed, model, view) {
+        var that = {};
+        that.model = model;
+        var feed = feed;
 
-grails.mobile.mvc.controller = function (feed, model, view) {
-    var that = {};
-    that.model = model;
-    var feed = feed;
+        that.onlineEvent = _event();
 
-    that.onlineEvent = grails.mobile.event();
+        // Register events
+        view.offlineEvent.attach(function (item) {
+            feed.setOffline();
+        });
 
-    // Register events
-    view.offlineEvent.attach(function (item) {
-        feed.setOffline();
-    });
+        view.onlineEvent.attach(function (item) {
+            feed.setOnline();
+            that.onlineEvent.notify();
+        });
 
-    view.onlineEvent.attach(function (item) {
-        feed.setOnline();
-        that.onlineEvent.notify();
-    });
+        view.listButtonClicked.attach(function (item) {
+            that.listItem(true);
+        });
 
-    view.listButtonClicked.attach(function (item) {
-        that.listItem();
-    });
+        view.editButtonClicked.attach(function () {
+            listDependent();
+        });
 
-    view.editButtonClicked.attach(function () {
-        listDependent();
-    });
+        view.createButtonClicked.attach(function (item, context) {
+            createItem(item, context);
+        });
 
+        view.updateButtonClicked.attach(function (item, context) {
+            updateItem(item, context);
+        });
 
-    view.createButtonClicked.attach(function (item) {
-        createItem(item);
-    });
+        view.deleteButtonClicked.attach(function (itemId, context) {
+            deleteItem(itemId, context);
+        });
 
-    view.updateButtonClicked.attach(function (item) {
-        updateItem(item);
-    });
+        var listDependent = function () {
+            if (that.hasOneRelations) {
+                $.each(that.hasOneRelations, function(key, controller) {
+                    controller.listItem(false);
+                    var qualifyAttributes = key.split('_');
+                    var dependent = qualifyAttributes[0];
+                    var dependentName = qualifyAttributes[1];
+                    listedDependent(dependent, dependentName, "many-to-one", controller.model.getItems());
+                });
+            }
+            if (that.oneToManyRelations) {
+                $.each(that.oneToManyRelations, function(key, controller) {
+                    controller.listItem(false);
+                    var qualifyAttributes = key.split('_');
+                    var dependent = qualifyAttributes[0];
+                    var dependentName = qualifyAttributes[1];
+                    listedDependent(dependent, dependentName, "one-to-many",controller.model.getItems());
+                });
+            }
+        };
 
-    view.deleteButtonClicked.attach(function (itemId) {
-        deleteItem(itemId);
-    });
+        var listedDependent = function (dependent, dependentName, relationType, data) {
+            that.model.listDependent(dependent, dependentName, relationType, data);
+        };
 
-    var listDependent = function () {
-        if (that.hasOneRelations) {
-            $.each(that.hasOneRelations, function() {
-                this.listItem();
-                listedDependent(this.model.getItems());
-            });
-        }
-    };
+        that.listItem = function (notifyView) {
+            var listed = function (data) {
+                that.model.listItems(data, notifyView);
+            };
+            if ($.isEmptyObject(that.model.getItems())) {
+                var list = feed.listItems(listed);
+            }
+        };
 
-    var listedDependent = function (data) {
-        that.model.listDependent(data);
-    };
+        var createItem = function (data, context) {
+            var created = function (data) {
+                return that.model.createItem(data, context);
+            };
+            feed.createItem(data, created);
+        };
 
-    that.listItem = function () {
-        if ($.isEmptyObject(that.model.getItems())) {
-            var list = feed.listItems(listed);
-        }
-    };
+        var updateItem = function (data, context) {
+            var updated = function (data) {
+                return that.model.updateItem(data, context);
+            };
 
-    var listed = function (data) {
-        that.model.listItems(data);
-    };
+            feed.updateItem(data, updated);
+        };
 
-    var createItem = function (data) {
-        feed.createItem(data, created);
-    };
+        var deleteItem = function (data, context) {
+            var deleted = function (data) {
+                that.model.deleteItem(data, context);
+            };
+            feed.deleteItem(data, deleted);
+        };
 
-    var created = function (data) {
-        if (data.message) {
-            alert(data.message);
-            return;
-        }
-        if (data.errors) {
-            // Here I need to add to field mapping for errors
-            alert("validation issue" + data.errors);
-            return;
-        }
-        that.model.createItem(data);
-    };
-
-    var updateItem = function (data) {
-        feed.updateItem(data, updated);
-    };
-
-    var updated = function (data, action) {
-        if (data.message) {
-            alert(data.message);
-            return;
-        }
-        if (data.errors) {
-            // Here I need to add to field mapping for errors
-            alert("validation issue" + data.errors);
-            return;
-        }
-        that.model.updateItem(data);
-    };
-
-    var deleteItem = function (data) {
-        feed.deleteItem(data, deleted);
-    };
-
-    var deleted = function (data, action) {
-        if (data.message) {
-            alert(data.message);
-            return;
-        }
-        if (data.errors) {
-            // Here I need to add to field mapping for errors
-            alert("validation issue" + data.errors);
-            return;
-        }
-        that.model.deleteItem(data);
-    };
-
-    return that;
-};
+        return that;
+    }
+});
 

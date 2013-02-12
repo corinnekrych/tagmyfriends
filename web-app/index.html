@@ -1,109 +1,63 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html >
 <head>
-    <title>My Page</title>
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css"/>
-    <link rel="stylesheet" href="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.min.css"/>
-    <script src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
-    
+    <title>tagmyfriends</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="images/apple-touch-icon.png" type="image/x-icon">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-retina.png">
+    <link rel="stylesheet" href="css/jquery/jquery.mobile-1.2.0.min.css"/>
 
-    <script src="js/grails/mobile/event.js"></script>
-    <script src="js/grails/mobile/mvc/model.js"></script>
-    <script src="js/grails/mobile/mvc/controller.js"></script>
-    <script src="js/grails/mobile/mvc/view.js"></script>
-    <script src="js/grails/mobile/storage/store.js"></script>
-    <script src="js/grails/mobile/feed/online.js"></script>
-    <script src="js/grails/mobile/feed/offline.js"></script>
-    <script src="js/grails/mobile/feed/feed.js"></script>
-    <script src="js/grails/mobile/helper/toObject.js"></script>
-    <script src="js/grails/mobile/sync/syncmanager.js"></script>
-    <script src="js/grails/mobile/mvc/manager.js"></script>
-    <script src="js/tagmyfriends/view/friend-view.js"></script>
-    <script src="js/tagmyfriends/configuration-bootstrap.js"></script>
-    <script src="js/tagmyfriends/checkin-bootstrap.js"></script>
-    <script src="js/tagmyfriends/friend-bootstrap.js"></script>
-    <script src="js/tagmyfriends/place-bootstrap.js"></script>
-    <script src="js/tagmyfriends/manager-bootstrap.js"></script>
-    <script src="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.js"></script>
-    <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.core.min.js"></script>
-    <script src="http://dev.jtsage.com/cdn/datebox/1.1.0/jqm-datebox-1.1.0.mode.datebox.min.js"></script>
+
+
+    <script src="js/jquery/jquery-1.8.2.min.js"></script>
+    <script src="js/grails/energize.js"></script>
+    <script src="js/jquery/jquery.mobile-1.2.0.min.js"></script>
+    <script>
+        //$.mobile.autoInitializePage = false;
+        //$.mobile.initializePage();
+    </script>
+    <script src="app/scripts/vendor/angular.js"></script>
+    <script src="app/scripts/app.js"></script>
+    <script src="app/scripts/controllers/main.js"></script>
+
+
 </head>
 
-<body>
-<section data-role="page" id="section-list-friends">
-    <div data-role="header" data-position="fixed">
-        
-        <h1>Friend</h1>
-        
-    </div>
-    
-        <div data-role="content" id="list-friends-parent">
-            
-            <ul data-role="listview" data-inset="true" data-filter="true" id="list-friends">
-            </ul>
+<body ng-app="tagmyfriends">
+
+    <section data-role="page" id="section-list-controllers">
+        <div data-role="header" data-position="fixed">
+            <a href="http://grails.org"><img width="30%" src="images/apple-touch-icon.png" alt="Grails"/></a>
+            <h1>Controller</h1>
         </div>
-        
-        <div data-role="footer" data-position="fixed">
-            <div data-role="navbar">
-                <ul>
-                    <li><a href="#section-show-friend" data-transition="slide" data-role="button"
-                           data-icon="plus">Add</a></li>
+
+        <div data-role="content">
+            <div class="content-primary">
+                <ul data-role="listview">
+
+                    <li><a href="friend-index.html" rel="external" data-transition="slide" >Friend</a></li>
+                    <li><a href="place-index.html" rel="external" data-transition="slide" >Place</a></li>
+                    <li><a href="checkin-index.html" rel="external" data-transition="slide" >Checkin</a></li>
+
                 </ul>
             </div>
         </div>
-</section>
+        <!-- Add your site or application content here -->
+        <div class="container" ng-view>ddfdfdfdfdd</div>
 
-<section data-role="page" id="section-show-friend">
-    <div data-role="header" id="show-friend" data-position="fixed">
-        <a href="#section-list-friends" data-transition="slide" data-icon="arrow-l">Cancel</a>
-
-        <h1>Friend</h1>
-    </div>
-    <div id="form-update-friend">
-        <ul data-role="listview" data-inset="true">
-            
-            <li data-role="fieldcontain">
-                
-                <label for="input-friend-firstname">Firstname</label>
-                <input type="text" name="firstname" id="input-friend-firstname" value=""/>
-                
-            </li>
-            
-            <li data-role="fieldcontain">
-                
-                <label for="input-friend-lastname">Lastname</label>
-                <input type="text" name="lastname" id="input-friend-lastname" value=""/>
-                
-            </li>
-            
-            <li data-role="fieldcontain">
-                
-                <label for="input-friend-registrationDate">Registration Date</label>
-                <input type="text" name="registrationDate" id="input-friend-registrationDate" value=""
-                       data-role="datebox" data-options='{"mode":"datebox", "useNewStyle":true}'/>
-                
-            </li>
-            
-        </ul>
-        
-        
-        <input type="hidden" name="id" id="input-friend-id"/>
-        <input type="hidden" name="version" id="input-friend-version"/>
-        <input type="hidden" name="class" id="input-friend-class"/>
-    </div>
-    
-    <div data-role="footer" data-position="fixed">
-        <div data-role="navbar">
-            <ul>
-                <li><a href="#section-list-friends" data-transition="slide" data-role="button"
-                       data-icon="delete" id="delete-friend">Delete</a></li>
-                <li><a href="#section-list-friends" data-transition="slide" data-icon="save"
-                       id="submit-friend">Save</a></li>
-            </ul>
+        <div data-role="footer" data-position="fixed">
+            <a class="ui-btn-left" rel="external" href="https://github.com/3musket33rs">
+                <img src="images/github-icon.png" />
+            </a>
+            <h1>
+                Powered by us (
+                <a href="mailto:th33musk3t33rs@gmail.com">th33musk3t33rs@gmail.com</a>
+                )
+            </h1>
+            <a class="ui-btn-right" rel="external" href="http://3musket33rs.github.com/html5-mobile-scaffolding/">
+                <img src="images/help.png" />
+            </a>
         </div>
-    </div>
-</section>
+    </section>
 </body>
 </html>

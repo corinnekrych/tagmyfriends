@@ -17,58 +17,85 @@
  * View are directly linked to the display of data. It uses jQuery
  * for its rendering.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.helper = grails.mobile.helper || {};
+define([],
+function() {
+    return function() {
+        var that = {};
+        //$( document ).on( "mobileinit", function() {
+        //    $.mobile.allowCrossDomainPages = true;
+        //    $.mobile.phonegapNavigationEnabled = true;
+        //    $.mobile.buttonMarkup.hoverDelay = 0;
+        //});
 
-grails.mobile.helper.isString = function isString(o) {
-    return typeof o === "string" || (typeof o === "object" && o.constructor === String);
-};
+        that.isString = function isString(o) {
+            return typeof o === "string" || (typeof o === "object" && o.constructor === String);
+        };
 
-grails.mobile.helper.toDomainObject = function (objectString) {
-    var listDomainObject;
-    if (objectString) {
-        listDomainObject = JSON.parse(objectString);
-    } else {
-        listDomainObject = {};
+        that.toDomainObject = function (objectString) {
+            var listDomainObject;
+            if (objectString) {
+                listDomainObject = JSON.parse(objectString);
+            } else {
+                listDomainObject = {};
+            }
+            return listDomainObject;
+        };
+
+        that.toObject = function (inputs) {
+            var objectData;
+            objectData = {};
+
+            $.each(inputs, function () {
+                var value;
+                var add = true;
+                if (this.type === 'select-one') {
+                    value = $(this).val();
+                } else if (this.type === 'text' && $(this).attr('data-type') === 'date') {
+                    value = $(this).scroller('getDate', true);
+                } else if (this.type === 'radio') {
+                    if ($(this).is(':checked')) {
+                        value = this.value;
+                    } else {
+                        add = false;
+                    }
+                } else if($(this).attr("data-gorm-relation") === "one-to-many") {
+                    if (!objectData[this.name]) {
+                        objectData[this.name] = [];
+                    }
+                    if (this.checked) {
+                        value = $(this).attr('id');
+                        var values = value.split('-');
+                        value = values[2];
+                    } else {
+                        add = false;
+                    }
+                } else if (this.type === 'checkbox') {
+                    value = this.checked;
+                } else {
+                    if ($(this).data('data-role') === 'calbox') {
+                        value = $(this).data('calbox').theDate;
+                    } else if (this.value !== null) {
+                        value = this.value;
+                    } else {
+                        value = '';
+                    }
+                }
+                if (add) {
+                    if ($(this).attr('data-gorm-relation') === "many-to-one") {
+                        objectData[this.name + '.id'] = value;
+                    } else if ($(this).attr('data-gorm-relation') === "one-to-many") {
+                        if (!objectData[this.name]) {
+                            objectData[this.name] = [];
+                        }
+                        objectData[this.name].push({id:value});
+                    } else {
+                        objectData[this.name] = value;
+                    }
+                }
+            });
+
+            return objectData;
+        }
+        return that;
     }
-    return listDomainObject;
-};
-
-grails.mobile.helper.toObject = function (inputs) {
-    var objectData;
-    objectData = {};
-
-    $.each(inputs, function () {
-        var value;
-        var add = true;
-        if (this.type === 'select-one') {
-            value = $(this).val();
-        } else if (this.type === 'radio') {
-            if ($(this).is(':checked')) {
-                value = this.value;
-            } else {
-                add = false;
-            }
-        } else if (this.type === 'checkbox') {
-            value = this.checked;
-        } else {
-            if ($(this).data('data-role') === 'calbox') {
-                value = $(this).data('calbox').theDate;
-            } else if (this.value !== null) {
-                value = this.value;
-            } else {
-                value = '';
-            }
-        }
-        if (add) {
-            if ($(this).attr('data-gorm-relation') === "many-to-one") {
-                objectData[this.name + '.id'] = value;
-            } else {
-                objectData[this.name] = value;
-            }
-        }
-    });
-
-    return objectData;
-};
+});

@@ -17,79 +17,80 @@
  * View are directly linked to the display of data. It uses jQuery
  * for its rendering.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.storage = grails.mobile.storage || {};
+define(["grails/mobile/helper/toObject"],
+function(helper) {
+    var _helper = helper;
+    return function(model, domainName) {
+        var that = {};
+        that.domainName = domainName;
+        that.model = model;
+        var key = "grails.mobile." + that.domainName;
 
-grails.mobile.storage.store = function (model, domainName) {
-    var that = {};
-    that.domainName = domainName;
-    that.model = model;
-    var key = "grails.mobile." + that.domainName;
-
-    that.store = function (object) {
-        var oldValue = localStorage.getItem(key);
-        var listDomainObject = grails.mobile.helper.toDomainObject(oldValue);
-
-        listDomainObject[object.id] = object;
-        localStorage.setItem(key, JSON.stringify(listDomainObject));
-        return object;
-    };
-
-    that.storeList = function (object) {
-        var oldValue = localStorage.getItem(key);
-        var listDomainObject = grails.mobile.helper.toDomainObject(oldValue);
-        var itemKey;
-
-        for (itemKey in object) {
-            listDomainObject[object[itemKey].id] = object[itemKey];
-        }
-        localStorage.setItem(key, JSON.stringify(listDomainObject));
-    };
-
-    that.remove = function (object) {
-        if (object) {
+        that.store = function (object) {
             var oldValue = localStorage.getItem(key);
-            localStorage.removeItem(key);
+            var listDomainObject = _helper().toDomainObject(oldValue);
 
-            var listDomainObject = grails.mobile.helper.toDomainObject(oldValue);
-            var domainKey;
-            for (domainKey in listDomainObject) {
-                if (domainKey == object.id) {
-                    delete listDomainObject[domainKey];
-                }
+            listDomainObject[object.id] = object;
+            localStorage.setItem(key, JSON.stringify(listDomainObject));
+            return object;
+        };
+
+        that.storeList = function (object) {
+            var oldValue = localStorage.getItem(key);
+            var listDomainObject = _helper().toDomainObject(oldValue);
+            var itemKey;
+
+            for (itemKey in object) {
+                listDomainObject[object[itemKey].id] = object[itemKey];
             }
             localStorage.setItem(key, JSON.stringify(listDomainObject));
-        }
-    };
+        };
 
-    // When offline, get list from local storage
-    that.read = function (id) {
-        var stringValue = localStorage.getItem(key);
-        var list = grails.mobile.helper.toDomainObject(stringValue);
-        if (id) {
+        that.remove = function (object) {
+            if (object) {
+                var oldValue = localStorage.getItem(key);
+                localStorage.removeItem(key);
+
+                var listDomainObject = _helper().toDomainObject(oldValue);
+                var domainKey;
+                for (domainKey in listDomainObject) {
+                    if (domainKey == object.id) {
+                        delete listDomainObject[domainKey];
+                    }
+                }
+                localStorage.setItem(key, JSON.stringify(listDomainObject));
+            }
+        };
+
+        // When offline, get list from local storage
+        that.read = function (id) {
+            var stringValue = localStorage.getItem(key);
+            var list = _helper().toDomainObject(stringValue);
+            if (id) {
+                for (var k in list) {
+                    if(list[k].id == id) {
+                        return list[k];
+                    }
+                }
+                return null;
+            }
+            return list;
+        };
+
+        that.dirty = function () {
+            var stringValue = localStorage.getItem(key);
+            var list = _helper().toDomainObject(stringValue);
+            var filteredList = {};
             for (var k in list) {
-                if(list[k].id == id) {
-                    return list[k];
+                if(list[k].offlineStatus === 'NOT-SYNC') {
+                    filteredList[k] = list[k];
                 }
             }
-        }
-        return list;
-    };
+            return filteredList;
+        };
 
-    that.dirty = function () {
-        var stringValue = localStorage.getItem(key);
-        var list = grails.mobile.helper.toDomainObject(stringValue);
-        var filteredList = {};
-        for (var k in list) {
-            if(list[k].offlineStatus === 'NOT-SYNC') {
-                filteredList[k] = list[k];
-            }
-        }
-        return filteredList;
-    };
-
-    return that;
-};
+        return that;
+    }
+});
 
 

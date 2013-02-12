@@ -17,27 +17,39 @@
  * View are directly linked to the display of data. It uses jQuery
  * for its rendering.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.mvc = grails.mobile.mvc || {};
+define(["grails/mobile/event",
+    "grails/mobile/mvc/model"],
+    function (event, model) {
+        var _event = event;
+        var _model = model;
+        return function (model, elements) {
+            var that = {};
+            that.model = model;
+            that.elements = elements;
 
-grails.mobile.mvc.view = function (model, elements) {
-    var that = {};
-    that.model = model;
-    that.elements = elements;
+            // List of events for the view
+            that.createButtonClicked = _event();
+            that.updateButtonClicked = _event();
+            that.addButtonClicked = _event();
+            that.deleteButtonClicked = _event();
+            that.listButtonClicked = _event();
+            that.editButtonClicked = _event();
 
-    // List of events for the view
-    that.createButtonClicked = grails.mobile.event();
-    that.updateButtonClicked = grails.mobile.event();
-    that.addButtonClicked = grails.mobile.event();
-    that.deleteButtonClicked = grails.mobile.event();
-    that.listButtonClicked = grails.mobile.event();
-    that.editButtonClicked = grails.mobile.event();
+            that.onlineEvent = _event();
+            that.offlineEvent = _event();
 
-    that.onlineEvent = grails.mobile.event();
-    that.offlineEvent = grails.mobile.event();
 
-    return that;
-};
+            // Detect online/offline from browser
+            addEventListener('offline', function (e) {
+                that.offlineEvent.notify();
+            });
+
+            addEventListener('online', function (e) {
+                that.onlineEvent.notify();
+            });
+
+            return that;
+        }
+    });
 
 

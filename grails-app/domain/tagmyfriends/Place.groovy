@@ -1,10 +1,9 @@
 package tagmyfriends
 
 class Place {
-    String name
-//    Double latitude
-//    Double longitude
+    String description
+    Double longitude
+    Double latitude
     static constraints = {
-
     }
 }

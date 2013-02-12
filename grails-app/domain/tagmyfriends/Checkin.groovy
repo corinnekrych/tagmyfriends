@@ -1,10 +1,9 @@
 package tagmyfriends
 
 class Checkin {
-    String name
-    Date when
+    String description
     Place place
-
+    static hasMany = [friends:Friend]
     static constraints = {
     }
 }

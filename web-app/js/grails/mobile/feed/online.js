@@ -14,64 +14,79 @@
  */
 /**
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.feed = grails.mobile.feed || {};
+define(["grails/mobile/helper/toObject"],
+    function (helper) {
+        var _helper = helper;
+        return function (url, store) {
+            var that = {};
+            var store = store;
 
-grails.mobile.feed.online = function (url, store) {
-    var that = {};
-    var store = store;
+            that.listItems = function (listed) {
+                send(null, "list", "GET", function (data) {
+                    if(listed){
+                        listed(data);
+                    }
+                    if (store) {
+                        store.storeList(data);
+                    }
+                });
+            };
 
-    that.listItems = function (listed) {
-        send(null, "list", "GET", function (data) {
-            store.storeList(data);
-            listed(data);
-        });
-    };
+            that.createItem = function (data, created) {
+                send(data, "save", "POST", function (response) {
+                    if (created(response)) {
+                        if (store) {
+                            store.store(response);
+                        }
+                    }
+                });
+            };
 
-    that.createItem = function (data, created) {
-        send(data, "save", "POST", function (response) {
-            store.store(response);
-            created(response);
-        });
-    };
+            that.updateItem = function (data, updated) {
+                send(data, "update", "POST", function (response) {
+                    if (updated(response)) {
+                        if (store) {
+                            store.store(response);
+                        }
+                    }
+                });
+            };
 
-    that.updateItem = function (data, updated) {
-        send(data, "update", "POST", function (response) {
-            store.store(response);
-            updated(response);
-        });
-    };
+            that.deleteItem = function (data, deleted) {
+                send(data, "delete", "POST", function (response) {
+                    deleted(response);
+                    if (store) {
+                        store.remove(response);
+                    }
+                });
+            };
 
-    that.deleteItem = function (data, deleted) {
-        send(data, "delete", "POST", function (response) {
-            store.remove(response);
-            deleted(response);
-        });
-    };
-
-    // Asynchronous Ajax call to server
-    var send = function (item, action, type, callback) {
-        $.ajax(cfg(url, type, action, item, callback));
-    };
+            // Asynchronous Ajax call to server
+            var send = function (item, action, type, callback) {
+                $.ajax(cfg(url, type, action, item, callback));
+            };
 
 
-    var cfg = function (url, type, action, dataToSend, successCallback) {
-        return {
-            cache: false,
-            type: type,
-            async: false,
-            data: dataToSend,
-            dataType: "jsonp",
-            url: url + action,
-            success: function (data) {
-                successCallback(data, action, dataToSend);
-            },
-            error: function (xhr) {
-                alert(xhr.responseText);
-            }
-        };
-    };
+            var cfg = function (url, type, action, dataToSend, successCallback) {
+                return {
+                    cache:false,
+                    type:type,
+                    async:false,
+                    data:dataToSend,
+                    dataType:"json",
+                    url:url + action,
+                    success:function (data) {
+                        successCallback(data, action, dataToSend);
+                    },
+                    error:function (xhr) {
+                        var data = [];
+                        data['item'] = [];
+                        data['item']['message'] = xhr.responseText;
+                        successCallback(data, action, dataToSend);
+                    }
+                };
+            };
 
-    return that;
-};
+            return that;
+        }
+    });

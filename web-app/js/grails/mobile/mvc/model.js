@@ -16,63 +16,75 @@
 /**
  * Model represents list of data used for CRUD.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.mvc = grails.mobile.mvc || {};
+define(["grails/mobile/event"],
+function(event) {
+    var _event = event;
+    return function() {
+        var that = {};
+        that.items = {};
+        that.dependentItems = {};
 
-grails.mobile.mvc.model = function (items) {
-    var that = {};
-    that.items = {};
-    that.dependentItems = {};
+        // register events
+        that.listedItems = _event(that);
+        that.listedDependentItems = _event(that);
+        that.createdItem = _event(that);
+        that.updatedItem = _event(that);
+        that.deletedItem = _event(that);
 
-    // register events
-    that.listedItems = grails.mobile.event(that);
-    that.listedDependentItems = grails.mobile.event(that);
-    that.createdItem = grails.mobile.event(that);
-    that.updatedItem = grails.mobile.event(that);
-    that.deletedItem = grails.mobile.event(that);
+        that.getItems = function () {
+            return that.items;
+        };
 
-    that.getItems = function () {
-        return that.items;
-    };
-    that.getDependentItems = function () {
-        return that.dependentItems;
-    };
+        that.listDependent = function (dependent, dependentName, relationType, items) {
+            var keyItem;
+            var list = {}
+            for (keyItem in items) {
+                list[items[keyItem].id] = items[keyItem];
+            }
+            that.dependentItems[dependent] = list;
+            that.listedDependentItems.notify({'items': that.dependentItems[dependent], relationType: relationType, dependentName: dependentName});
+        };
 
+        that.listItems = function (items, notifyView) {
+            var keyItem;
+            for (keyItem in items) {
+                that.items[items[keyItem].id] = items[keyItem];
+            }
+            if (notifyView) {
+                that.listedItems.notify({'items': that.items});
+            }
+        };
 
-    that.listDependent = function (json) {
-        var keyItem;
-        for (keyItem in json) {
-            that.dependentItems[json[keyItem].id] = json[keyItem];
-        }
-        that.listedDependentItems.notify({'items': that.dependentItems});
-    };
+        that.createItem = function (item, context) {
+            that.createdItem.notify({item: item}, context);
+            if (item.errors || item.message) {
+                return false;
+            }
+            that.items[item.id] = item;
+            return true;
+        };
 
-    that.listItems = function (json) {
-        var keyItem;
-        for (keyItem in json) {
-            that.items[json[keyItem].id] = json[keyItem];
-        }
-        that.listedItems.notify({'items': that.items});
-    };
+        that.updateItem = function (item, context) {
+            that.updatedItem.notify({item: item}, context);
+            if (item.errors || item.message) {
+                return false;
+            }
+            that.items[item.id] = item;
+            return true;
+        };
 
-    that.createItem = function (item) {
-        that.items[item.id] = item;
-        that.createdItem.notify({item: item});
-    };
+        that.deleteItem = function (item, context) {
+            that.deletedItem.notify({item:item}, context);
+            if (item.errors || item.message) {
+                return false;
+            }
+            if (item.offlineStatus != 'NOT-SYNC') {
+                delete that.items[item.id];
+            }
+            return true;
+        };
 
-    that.updateItem = function (item) {
-        that.items[item.id] = item;
-        that.updatedItem.notify({item: item});
-    };
-
-    that.deleteItem = function (item) {
-        delete that.items[item.id];
-        that.deletedItem.notify({item:item});
-    };
-
-
-
-    return that;
-};
+        return that;
+    }
+});
 

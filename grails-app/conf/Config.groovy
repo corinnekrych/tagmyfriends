@@ -62,9 +62,6 @@ grails.hibernate.cache.queries = false
 environments {
     development {
         grails.logging.jul.usebridge = true
-        phonegapbuild.username="corinnekrych@gmail.com"
-        phonegapbuild.password="password"
-        phonegapbuild.phonegapversion="2.1.0"
     }
     production {
         grails.logging.jul.usebridge = false
@@ -92,3 +89,10 @@ log4j = {
            'org.hibernate',
            'net.sf.ehcache.hibernate'
 }
+
+phonegapbuild.username="corinnekrych@gmail.com"
+phonegapbuild.password="password"
+phonegapbuild.phonegapversion="2.1.0"
+
+// Added by the Html5 Mobile Scaffolding plugin:
+grails.converters.json.domain.include.version=true

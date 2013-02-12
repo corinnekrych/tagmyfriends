@@ -14,39 +14,51 @@
  */
 /**
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.feed = grails.mobile.feed || {};
+define(["grails/mobile/feed/online",
+    "grails/mobile/feed/offline"],
+    function (online, offline) {
+        var _online = online;
+        var _offline = offline;
+        return function (baseUrl, store) {
+            var that = {};
+            var onlineFeed = _online(baseUrl, store);
+            if (store) {
+                var offlineFeed = _offline(store);
+                var currentFeed = navigator.onLine ? onlineFeed : offlineFeed;
 
-grails.mobile.feed.feed = function (baseUrl, store) {
-    var that = {};
-    var onlineFeed = grails.mobile.feed.online(baseUrl, store);
-    var offlineFeed = grails.mobile.feed.offline(store);
-    var currentFeed = navigator.onLine ? onlineFeed : offlineFeed;
+                that.setOffline = function () {
+                    currentFeed = offlineFeed;
+                };
 
-    that.setOffline = function () {
-        currentFeed = offlineFeed;
-    };
+                that.setOnline = function () {
+                    currentFeed = onlineFeed;
+                };
+            } else {
+                var currentFeed = onlineFeed;
 
-    that.setOnline = function () {
-        currentFeed = onlineFeed;
-    };
+                that.setOffline = function () {
+                };
 
-    that.listItems = function (listed) {
-        currentFeed.listItems(listed);
-    };
+                that.setOnline = function () {
+                };
+            }
 
-    that.createItem = function (data, created) {
-        currentFeed.createItem(data, created);
-    };
+            that.listItems = function (listed) {
+                currentFeed.listItems(listed);
+            };
 
-    that.updateItem = function (data, updated) {
-        currentFeed.updateItem(data, updated);
-    };
+            that.createItem = function (data, created) {
+                currentFeed.createItem(data, created);
+            };
 
-    that.deleteItem = function (data, deleted) {
-        currentFeed.deleteItem(data, deleted);
-    };
+            that.updateItem = function (data, updated) {
+                currentFeed.updateItem(data, updated);
+            };
 
-    return that;
-};
+            that.deleteItem = function (data, deleted) {
+                currentFeed.deleteItem(data, deleted);
+            };
+
+            return that;
+        }
+    });

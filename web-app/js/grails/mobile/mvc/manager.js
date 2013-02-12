@@ -17,76 +17,95 @@
  * Controller sends asynchronous call to server if needed and changes
  * the model.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
-grails.mobile.mvc = grails.mobile.mvc || {};
 
-grails.mobile.mvc.manager = function (configuration) {
-    var that = {};
+define(["require",
+    "grails/grailsEvents",
+    "grails/mobile/mvc/model",
+    "grails/mobile/mvc/view",
+    "grails/mobile/storage/store",
+    "grails/mobile/feed/feed",
+    "grails/mobile/mvc/controller",
+    "grails/mobile/sync/syncmanager",
+    "grails/mobile/push/pushmanager"],
+    function (require, events, model, view,  store, feed, controller, syncManager, pushManager) {
+        var _events = events;
+        var _model = model;
+        var _view = view;
+        var _store = store;
+        var _feed = feed;
+        var _controller = controller;
+        var _syncManager = syncManager;
+        var _pushManager = pushManager;
 
-    var baseURL = configuration.baseURL;
-    var namespace = configuration.namespace;
-    var controllers = {};
+        return function (conf) {
+            var that = {};
 
-    var resolveNamespace = function (functionPath) {
-        var namespaces = functionPath.split(".");
-        var funcName = namespaces.pop();
-        var parent = window;
-        namespaces.forEach(function (name) {
-            if (typeof parent != 'undefined') {
-                parent = parent[name];
-            }
-        });
-        if (typeof parent === 'undefined') {
-            throw new TypeError("'" + functionPath + "' does not exist");
+            var baseURL = conf.baseURL;
+            var namespace = conf.namespace;
+            var grailsEvents = new _events(conf.baseURL, {transport:'sse'});
+
+            var controllers = {};
+
+            that.domainsObjects = {};
+            $.each(conf.domain, function () {
+
+                if (this.options === undefined) {
+                    this.options = {
+                        offline:true,
+                        eventPush:true
+                    }
+                }
+
+                var domainName = this.name;
+
+                // create model for domain object
+                var model = _model();
+
+                // create local storage for domain object
+                if (this.options.offline) {
+                    var store = _store(model, domainName);
+                }
+
+                // create view for domain object
+                var myView = require('../../../' + namespace + '/view/' + this.name + '-view');
+                myView = myView(model, this.view);
+
+                // Create Feed
+                var feed = _feed(baseURL + this.name + '/', store);
+
+                // create controller for domain object
+                var controller = _controller(feed, model, myView);
+
+                var sync = _syncManager(baseURL + this.name + '/', domainName, controller, store, model, this.options);
+
+                var push = _pushManager(grailsEvents, domainName, store, model, this.options);
+
+                that.domainsObjects[domainName] = {
+                    model:model,
+                    view:myView,
+                    controller:controller,
+                    sync:sync,
+                    push:push
+                };
+            });
+
+            $.each(conf.domain, function () {
+                if (this.hasOneRelations) {
+                    that.domainsObjects[this.name].controller.hasOneRelations = {};
+                    for (var i = 0; i < this.hasOneRelations.length; i++) {
+                        var relationName = this.hasOneRelations[i].type + '_' + this.hasOneRelations[i].name;
+                        that.domainsObjects[this.name].controller.hasOneRelations[relationName] = that.domainsObjects[this.hasOneRelations[i].type].controller;
+                    }
+                }
+                if (this.oneToManyRelations) {
+                    that.domainsObjects[this.name].controller.oneToManyRelations = {};
+                    for (var i = 0; i < this.oneToManyRelations.length; i++) {
+                        var relationName = this.oneToManyRelations[i].type + '_' + this.oneToManyRelations[i].name;
+                        that.domainsObjects[this.name].controller.oneToManyRelations[relationName] = that.domainsObjects[this.oneToManyRelations[i].type].controller;
+                    }
+                }
+            });
+
+            return that;
         }
-        var func = parent[funcName];
-        if (typeof func !== 'function') {
-            throw new TypeError("'" + functionPath + "' is not a function");
-        }
-        return func.bind(parent);
-    };
-
-    var domainsObjects = {};
-    $.each(configuration.domain, function () {
-        var domainName = this.name;
-
-        // create model for domain object
-        var model = grails.mobile.mvc.model();
-
-        // create local storage for domain object
-        var store = grails.mobile.storage.store(model, domainName);
-
-        // create view for domain object
-        var viewName = namespace + '.view.' + this.name + 'view';
-        var funcToApply = resolveNamespace(viewName);
-        var view = funcToApply(model, this.view);
-
-        // Create Feed
-        var feed = grails.mobile.feed.feed(baseURL + this.name + '/', store);
-
-        // create controller for domain object
-        var controller = grails.mobile.mvc.controller(feed, model, view);
-
-        var sync = grails.mobile.sync.syncmanager(baseURL + this.name + '/', domainName, controller, store, model);
-
-        domainsObjects[domainName] = {
-            model:model,
-            view:view,
-            controller:controller,
-            sync:sync
-        };
     });
-
-    $.each(configuration.domain, function () {
-        if (this.hasOneRelations) {
-            domainsObjects[this.name].controller.hasOneRelations = {};
-            for (var i = 0; i < this.hasOneRelations.length; i++) {
-                domainsObjects[this.name].controller.hasOneRelations[this.hasOneRelations[i]] = domainsObjects[this.hasOneRelations[i]].controller;
-            }
-        }
-    });
-
-
-    return that;
-};

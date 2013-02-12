@@ -1,143 +1,187 @@
+define(["grails/mobile/mvc/view",
+    "grails/mobile/helper/toObject"],
+    function (parentView, helper) {
+        var _parentView = parentView;
+        var _helper = helper;
+        return function (model, elements) {
 
+            var that = _parentView(model, elements);
 
+            // Register events
+            that.model.listedItems.attach(function (data) {
+                $('#list-friend').empty();
+                var key, items = model.getItems();
+                $.each(items, function (key, value) {
+                    renderElement(value);
+                });
+                $('#list-friend').listview('refresh');
+            });
 
-var tagmyfriends = tagmyfriends || {};
-tagmyfriends.view = tagmyfriends.view || {};
+            that.model.createdItem.attach(function (data, event) {
+                if (data.item.errors) {
+                    $.each(data.item.errors, function (index, error) {
+                        $('#input-friend-' + error.field).validationEngine('showPrompt', error.message, 'fail');
+                    });
+                    event.stopPropagation();
+                } else if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    renderElement(data.item);
+                    $('#list-friend').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-friend'));
+                    }
+                }
+            });
 
-tagmyfriends.view.friendview = function (model, elements) {
+            that.model.updatedItem.attach(function (data, event) {
+                if (data.item.errors) {
+                    $.each(data.item.errors, function (index, error) {
+                        $('#input-friend-' + error.field).validationEngine('showPrompt', error.message, 'fail');
+                    });
+                    event.stopPropagation();
+                } else if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    updateElement(data.item);
+                    $('#list-friend').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-friend'));
+                    }
+                }
+            });
 
-    var that = grails.mobile.mvc.view(model, elements);
-    
-    // Register events
-    that.model.listedItems.attach(function (data) {
-        renderList();
-    });
+            that.model.deletedItem.attach(function (data, event) {
+                if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    if (data.item.offlineStatus === 'NOT-SYNC') {
+                        $('#friend-list-' + data.item.id).parents('li').replaceWith(createListItem(data.item));
+                    } else {
+                        $('#friend-list-' + data.item.id).parents('li').remove();
+                    }
+                    $('#list-friend').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-friend'));
+                    }
+                }
+            });
 
-    that.model.createdItem.attach(function (data) {
-        renderElement(data.item);
-        $('#list-friends').listview('refresh');
-        mapServiceList.refreshCenterZoomMap();
-    });
+            // user interface actions
+            that.elements.save.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-friend').validationEngine('hide');
+                if ($('#form-update-friend').validationEngine('validate')) {
+                    var obj = _helper().toObject($('#form-update-friend').find('input, select'));
+                    var newElement = {
+                        friend:JSON.stringify(obj)
+                    };
+                    if (obj.id === '') {
+                        that.createButtonClicked.notify(newElement, event);
+                    } else {
+                        that.updateButtonClicked.notify(newElement, event);
+                    }
+                }
+            });
 
-    that.model.updatedItem.attach(function (data) {
-         renderList();
-    });
+            that.elements.remove.live('click tap', function (event) {
+                event.stopPropagation();
+                that.deleteButtonClicked.notify({ id:$('#input-friend-id').val() }, event);
+            });
 
-    that.model.deletedItem.attach(function (data) {
-        $('#friend' + data.item.id + '-in-list').parents('li').remove();
-        mapServiceList.removeMarker(data.item.id);
-        mapServiceList.refreshCenterZoomMap();
-    });
+            that.elements.add.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-friend').validationEngine('hide');
+                $('#form-update-friend').validationEngine({promptPosition:'bottomLeft'});
+                createElement();
+            });
 
-    // user interface actions
-    
-    that.elements.list.live('pageinit', function (e) {
-        that.listButtonClicked.notify();
-    });
+            that.elements.show.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-friend').validationEngine('hide');
+                $('#form-update-friend').validationEngine({promptPosition:'bottomLeft'});
+                showElement($(event.currentTarget).attr("data-id"));
+            });
 
-    that.elements.save.live("click tap", function () {
-        var obj = grails.mobile.helper.toObject($("#form-update-friend").find("input, select"));
-        var newElement = {
-            friend: JSON.stringify(obj)
-        };
-        if (obj.id === "") {
-            that.createButtonClicked.notify(newElement);
-        } else {
-            that.updateButtonClicked.notify(newElement);
+            var createElement = function () {
+                resetForm('form-update-friend');
+                $.mobile.changePage($('#section-show-friend'));
+                $('#delete-friend').css('display', 'none');
+            };
+
+            var showElement = function (id) {
+                resetForm('form-update-friend');
+                var element = that.model.items[id];
+                $.each(element, function (name, value) {
+                    var input = $('#input-friend-' + name);
+                    input.val(value);
+                    if (input.attr('data-type') == 'date') {
+                        input.scroller('setDate', (value === '') ? '' : new Date(value), true);
+                    }
+                });
+                $('#delete-friend').show();
+                $.mobile.changePage($('#section-show-friend'));
+            };
+
+            var resetForm = function (form) {
+                $('input[data-type="date"]').each(function () {
+                    $(this).scroller('destroy').scroller({
+                        preset:'date',
+                        theme:'default',
+                        display:'modal',
+                        mode:'scroller',
+                        dateOrder:'mmD ddyy'
+                    });
+                });
+                var div = $("#" + form);
+                div.find('input:text, input:hidden, input[type="number"], input:file, input:password').val('');
+                div.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');//.checkboxradio('refresh');
+            };
+
+            var createListItem = function (element) {
+                var li, a = $('<a>');
+                a.attr({
+                    id:'friend-list-' + element.id,
+                    'data-id':element.id,
+                    'data-transition':'fade'
+                });
+                a.text(getText(element));
+                if (element.offlineStatus === 'NOT-SYNC') {
+                    li = $('<li>').attr({'data-theme':'e'});
+                    li.append(a);
+                } else {
+                    li = $('<li>').append(a);
+                }
+                return li;
+            };
+
+            var renderElement = function (element) {
+                $('#list-friend').append(createListItem(element));
+            };
+
+            var updateElement = function (element) {
+                $('#friend-list-' + element.id).parents('li').replaceWith(createListItem(element));
+            };
+
+            var getText = function (data) {
+                var textDisplay = '';
+                $.each(data, function (name, value) {
+                    if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus'
+                        && name !== 'status' && name !== 'version' && name != 'longitude' && name != 'latitude'
+                        && name != 'NOTIFIED') {
+                        if (typeof value !== 'object') {   // do not display relation in list view
+                            textDisplay += value + ' - ';
+                        }
+                    }
+                });
+                return textDisplay.substring(0, textDisplay.length - 2);
+            };
+
+            var showGeneralMessage = function (data, event) {
+                $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, data.item.message, true);
+                setTimeout($.mobile.hidePageLoadingMsg, 3000);
+                event.stopPropagation();
+            };
+            return that;
         }
     });
-
-    that.elements.remove.live("click tap", function () {
-        that.deleteButtonClicked.notify({ id: $('#input-friend-id').val() });
-    });
-
-    // Detect online/offline from browser
-    addEventListener('offline', function(e) {
-        that.offlineEvent.notify();
-    });
-
-    addEventListener('online', function(e) {
-        that.onlineEvent.notify();
-    });
-
-    // Detect online/offline from application
-    $("#offline").live("click tap", function () {
-        that.offlineEvent.notify();
-    });
-
-    $("#online").live("click tap", function () {
-        that.onlineEvent.notify();
-    });
-
-    that.elements.add.live('pageshow', function (e) {
-        var url = $(e.target).attr("data-url");
-        var matches = url.match(/\?id=(.*)/);
-
-        if (matches) {
-            showElement(matches[1]);
-        } else {
-            createElement();
-        }
-    });
-
-    var createElement = function () {
-        resetForm("form-update-friend");
-        
-        $("#delete-friend").hide();
-    };
-
-    var showElement = function (id) {
-        resetForm("form-update-friend");
-        var element = that.model.items[id];
-        $.each(element, function (name, value) {
-            $('#input-friend-' + name).val(value);
-        });
-        
-        $("#delete-friend").show();
-    };
-
-    var resetForm = function (form) {
-        var div = $("#" + form);
-        div.find('input:text, input:hidden, input[type="number"], input:file, input:password').val('');
-        div.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected').checkboxradio('refresh');
-    };
-    
-
-    var renderList = function () {
-        
-        $('#list-friends').empty();
-        var key, items = model.getItems();
-        for (key in items) {
-            renderElement(items[key]);
-        }
-        $('#list-friends').listview('refresh');
-        
-    };
-
-    var renderElement = function (element) {
-        if (element.offlineAction !== 'DELETED') {
-            var a = $('<a>').attr({ href: '#section-show-friend?id=' + element.id });
-            a.attr({id : 'friend' + element.id + '-in-list'});
-            a.attr({'data-transition': 'fade' });
-            a.text(getText(element));
-            if (element.offlineStatus === "NOT-SYNC") {
-                $("#list-friends").append($('<li data-theme="e">').append(a));
-            } else {
-                $("#list-friends").append($('<li>').append(a));
-            }
-            
-        }
-    };
-
-    var getText = function (data) {
-        var textDisplay = '';
-        $.each(data, function (name, value) {
-            if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
-                textDisplay += value + ";";
-            }
-        });
-        return textDisplay.substring(0, textDisplay.length - 1);
-    };
-
-    return that;
-};

@@ -17,23 +17,23 @@
  * Event class used by MVC to communicate from view to controller or from Model to view.
  * Controller has direct access to views and model.
  */
-var grails = grails || {};
-grails.mobile = grails.mobile || {};
+define([],
+function () {
+    return function() {
+        var that = {};
+        that.listeners = [];
 
-grails.mobile.event = function () {
-    var that = {};
-    that.listeners = [];
+        that.attach = function (listener) {
+            that.listeners.push(listener);
+        };
 
-    that.attach = function (listener) {
-        that.listeners.push(listener);
-    };
+        that.notify = function (data, event) {
+            var index;
 
-    that.notify = function (args) {
-        var index;
-
-        for (index = 0; index < that.listeners.length; index += 1) {
-            that.listeners[index](args);
-        }
-    };
-    return that;
-};
+            for (index = 0; index < that.listeners.length; index += 1) {
+                that.listeners[index](data, event);
+            }
+        };
+        return that;
+    }
+});

@@ -1,142 +1,253 @@
+define(["grails/mobile/mvc/view",
+    "grails/mobile/helper/toObject",
+    "grails/mobile/map/googleMapService"],
+    function (parentView, helper, map) {
+        var _parentView = parentView;
+        var _helper = helper;
+        var _map = map;
+        return function (model, elements) {
 
+            var that = _parentView(model, elements);
+            var mapServiceList = _map();
+            var mapServiceForm = _map();
 
+            // Register events
+            that.model.listedItems.attach(function (data) {
+                mapServiceList.emptyMap('map-canvas-list-place');
+                $('#list-place').empty();
+                var key, items = model.getItems();
+                $.each(items, function (key, value) {
+                    renderElement(value);
+                });
+                $('#list-place').listview('refresh');
+            });
 
-var tagmyfriends = tagmyfriends || {};
-tagmyfriends.view = tagmyfriends.view || {};
+            that.model.createdItem.attach(function (data, event) {
+                if (data.item.errors) {
+                    $.each(data.item.errors, function (index, error) {
+                        $('#input-place-' + error.field).validationEngine('showPrompt', error.message, 'fail');
+                    });
+                    event.stopPropagation();
+                } else if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    renderElement(data.item);
+                    $('#list-place').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-place'));
+                    }
+                }
+            });
 
-tagmyfriends.view.placeview = function (model, elements) {
+            that.model.updatedItem.attach(function (data, event) {
+                if (data.item.errors) {
+                    $.each(data.item.errors, function (index, error) {
+                        $('#input-place-' + error.field).validationEngine('showPrompt', error.message, 'fail');
+                    });
+                    event.stopPropagation();
+                } else if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    updateElement(data.item);
+                    $('#list-place').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-place'));
+                    }
+                }
+            });
 
-    var that = grails.mobile.mvc.view(model, elements);
-    
-    // Register events
-    that.model.listedItems.attach(function (data) {
-        renderList();
-    });
+            that.model.deletedItem.attach(function (data, event) {
+                if (data.item.message) {
+                    showGeneralMessage(data, event);
+                } else {
+                    if (data.item.offlineStatus === 'NOT-SYNC') {
+                        $('#place-list-' + data.item.id).parents('li').replaceWith(createListItem(data.item));
+                    } else {
+                        $('#place-list-' + data.item.id).parents('li').remove();
+                        mapServiceList.removeMarker(data.item.id);
+                    }
+                    $('#list-place').listview('refresh');
+                    if (!data.item.NOTIFIED) {
+                        $.mobile.changePage($('#section-list-place'));
+                    }
+                }
+            });
 
-    that.model.createdItem.attach(function (data) {
-        renderElement(data.item);
-        $('#list-places').listview('refresh');
-    	
-    });
+            // user interface actions
+            $('#section-list-place').live('pageshow', function () {
+                mapServiceList.refreshCenterZoomMap();
+            });
 
-    that.model.updatedItem.attach(function (data) {
-         renderList();
-    });
+            $('#section-show-place').live('pageshow', function () {
+                if ($('#input-place-id').val() === '') {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        var coord = {
+                            latitude:$('#input-place-latitude'),
+                            longitude:$('#input-place-longitude')
+                        };
+                        mapServiceForm.showMap('map-canvas-form-place', position.coords.latitude, position.coords.longitude, coord);
+                        mapServiceForm.refreshCenterZoomMap();
+                    });
+                } else {
+                    mapServiceForm.refreshCenterZoomMap();
+                }
+            });
 
-    that.model.deletedItem.attach(function (data) {
-        $('#place' + data.item.id + '-in-list').parents('li').remove();
-        
-    });
+            $('#list-all-place').live('click tap', function (e, ui) {
+                hideMapDisplay();
+                showListDisplay();
+            });
 
-    // user interface actions
-    
-    that.elements.list.live('pageinit', function (e) {
-        that.listButtonClicked.notify();
-    });
+            $('#map-all-place').live('click tap', function (e, ui) {
+                hideListDisplay();
+                showMapDisplay();
+            });
+            that.elements.list.live('pageinit', function (e) {
+                that.listButtonClicked.notify();
+            });
 
-    that.elements.save.live("click tap", function () {
-        var obj = grails.mobile.helper.toObject($("#form-update-place").find("input, select"));
-        var newElement = {
-            place: JSON.stringify(obj)
-        };
-        if (obj.id === "") {
-            that.createButtonClicked.notify(newElement);
-        } else {
-            that.updateButtonClicked.notify(newElement);
+            that.elements.save.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-place').validationEngine('hide');
+                if ($('#form-update-place').validationEngine('validate')) {
+                    var obj = _helper().toObject($('#form-update-place').find('input, select'));
+                    var newElement = {
+                        place:JSON.stringify(obj)
+                    };
+                    if (obj.id === '') {
+                        that.createButtonClicked.notify(newElement, event);
+                    } else {
+                        that.updateButtonClicked.notify(newElement, event);
+                    }
+                }
+            });
+
+            that.elements.remove.live('click tap', function (event) {
+                event.stopPropagation();
+                that.deleteButtonClicked.notify({ id:$('#input-place-id').val() }, event);
+            });
+
+            that.elements.add.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-place').validationEngine('hide');
+                $('#form-update-place').validationEngine({promptPosition:'bottomLeft'});
+                createElement();
+            });
+
+            that.elements.show.live('click tap', function (event) {
+                event.stopPropagation();
+                $('#form-update-place').validationEngine('hide');
+                $('#form-update-place').validationEngine({promptPosition:'bottomLeft'});
+                showElement($(event.currentTarget).attr("data-id"));
+            });
+
+            var createElement = function () {
+                resetForm('form-update-place');
+                $.mobile.changePage($('#section-show-place'));
+                $('#delete-place').css('display', 'none');
+            };
+
+            var showElement = function (id) {
+                resetForm('form-update-place');
+                var element = that.model.items[id];
+                $.each(element, function (name, value) {
+                    var input = $('#input-place-' + name);
+                    input.val(value);
+                    if (input.attr('data-type') == 'date') {
+                        input.scroller('setDate', (value === '') ? '' : new Date(value), true);
+                    }
+                });
+                var coord = {
+                    latitude:$('#input-place-latitude'),
+                    longitude:$('#input-place-longitude')
+                };
+                mapServiceForm.showMap('map-canvas-form-place', element.latitude, element.longitude, coord);
+                $('#delete-place').show();
+                $.mobile.changePage($('#section-show-place'));
+            };
+
+            var resetForm = function (form) {
+                $('input[data-type="date"]').each(function () {
+                    $(this).scroller('destroy').scroller({
+                        preset:'date',
+                        theme:'default',
+                        display:'modal',
+                        mode:'scroller',
+                        dateOrder:'mmD ddyy'
+                    });
+                });
+                var div = $("#" + form);
+                div.find('input:text, input:hidden, input[type="number"], input:file, input:password').val('');
+                div.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');//.checkboxradio('refresh');
+            };
+
+            var hideListDisplay = function () {
+                $('#list-place-parent').css('display', 'none');
+            };
+
+            var showMapDisplay = function () {
+                $('#map-place-parent').css('display', '');
+                mapServiceList.refreshCenterZoomMap();
+            };
+
+            var showListDisplay = function () {
+                $('#list-place-parent').css('display', '');
+            };
+
+            var hideMapDisplay = function () {
+                $('#map-place-parent').css('display', 'none');
+            };
+
+            var createListItem = function (element) {
+                var li, a = $('<a>');
+                a.attr({
+                    id:'place-list-' + element.id,
+                    'data-id':element.id,
+                    'data-transition':'fade'
+                });
+                a.text(getText(element));
+                if (element.offlineStatus === 'NOT-SYNC') {
+                    li = $('<li>').attr({'data-theme':'e'});
+                    li.append(a);
+                } else {
+                    li = $('<li>').append(a);
+                }
+                var id = element.id;
+                mapServiceList.addMarker(element, getText(element), function () {
+                    $('#place-list-' + id).click();
+                });
+                return li;
+            };
+
+            var renderElement = function (element) {
+                $('#list-place').append(createListItem(element));
+            };
+
+            var updateElement = function (element) {
+                mapServiceList.removeMarker(element.id);
+                $('#place-list-' + element.id).parents('li').replaceWith(createListItem(element));
+            };
+
+            var getText = function (data) {
+                var textDisplay = '';
+                $.each(data, function (name, value) {
+                    if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus'
+                        && name !== 'status' && name !== 'version' && name != 'longitude' && name != 'latitude'
+                        && name != 'NOTIFIED') {
+                        if (typeof value !== 'object') {   // do not display relation in list view
+                            textDisplay += value + ' - ';
+                        }
+                    }
+                });
+                return textDisplay.substring(0, textDisplay.length - 2);
+            };
+
+            var showGeneralMessage = function (data, event) {
+                $.mobile.showPageLoadingMsg($.mobile.pageLoadErrorMessageTheme, data.item.message, true);
+                setTimeout($.mobile.hidePageLoadingMsg, 3000);
+                event.stopPropagation();
+            };
+
+            return that;
         }
     });
-
-    that.elements.remove.live("click tap", function () {
-        that.deleteButtonClicked.notify({ id: $('#input-place-id').val() });
-    });
-
-    // Detect online/offline from browser
-    addEventListener('offline', function(e) {
-        that.offlineEvent.notify();
-    });
-
-    addEventListener('online', function(e) {
-        that.onlineEvent.notify();
-    });
-
-    // Detect online/offline from application
-    $("#offline").live("click tap", function () {
-        that.offlineEvent.notify();
-    });
-
-    $("#online").live("click tap", function () {
-        that.onlineEvent.notify();
-    });
-
-    that.elements.add.live('pageshow', function (e) {
-        var url = $(e.target).attr("data-url");
-        var matches = url.match(/\?id=(.*)/);
-
-        if (matches) {
-            showElement(matches[1]);
-        } else {
-            createElement();
-        }
-    });
-
-    var createElement = function () {
-        resetForm("form-update-place");
-        
-        $("#delete-place").hide();
-    };
-
-    var showElement = function (id) {
-        resetForm("form-update-place");
-        var element = that.model.items[id];
-        $.each(element, function (name, value) {
-            $('#input-place-' + name).val(value);
-        });
-        
-        $("#delete-place").show();
-    };
-
-    var resetForm = function (form) {
-        var div = $("#" + form);
-        div.find('input:text, input:hidden, input[type="number"], input:file, input:password').val('');
-        div.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected').checkboxradio('refresh');
-    };
-    
-
-    var renderList = function () {
-        
-        $('#list-places').empty();
-        var key, items = model.getItems();
-        for (key in items) {
-            renderElement(items[key]);
-        }
-        $('#list-places').listview('refresh');
-        
-    };
-
-    var renderElement = function (element) {
-        if (element.offlineAction !== 'DELETED') {
-            var a = $('<a>').attr({ href: '#section-show-place?id=' + element.id });
-            a.attr({id : 'place' + element.id + '-in-list'});
-            a.attr({'data-transition': 'fade' });
-            a.text(getText(element));
-            if (element.offlineStatus === "NOT-SYNC") {
-                $("#list-places").append($('<li data-theme="e">').append(a));
-            } else {
-                $("#list-places").append($('<li>').append(a));
-            }
-            
-        }
-    };
-
-    var getText = function (data) {
-        var textDisplay = '';
-        $.each(data, function (name, value) {
-            if (name !== 'class' && name !== 'id' && name !== 'offlineAction' && name !== 'offlineStatus' && name !== 'status' && name !== 'version') {
-                textDisplay += value + ";";
-            }
-        });
-        return textDisplay.substring(0, textDisplay.length - 1);
-    };
-
-    return that;
-};
