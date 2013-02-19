@@ -20,7 +20,7 @@
 
 </head>
 
-<body ng-app="tagmyfriends">
+<body ng-app="tagmyfriends" ng-controller="MainCtrl">
 
     <section data-role="page" id="section-list-controllers">
         <div data-role="header" data-position="fixed">
@@ -28,8 +28,7 @@
             <h1>Controller</h1>
         </div>
 
-        <!-- Add your site or application content here -->
-        <div class="container" ng-view></div>
+        <div class="container" ng-include src="'app/views/main.html'"></div>
 
         <div data-role="footer" data-position="fixed">
             <a class="ui-btn-left" rel="external" href="https://github.com/3musket33rs">

@@ -22,8 +22,10 @@ class FriendController {
     }
 
     def save() {
+      println "Params:" + params
+      println "params.friend:" + params.friend
       def jsonObject = JSON.parse(params.friend)
-      
+      println "json:" + jsonObject
       Friend friendInstance = new Friend(jsonObject)
 
       
