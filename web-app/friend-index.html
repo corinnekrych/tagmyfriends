@@ -26,6 +26,7 @@
     <script src="app/scripts/app.js"></script>
     <script src="app/scripts/controllers/friendcontroller.js"></script>
     <script src="app/services/friend.js"></script>
+    <script src="app/directives/listrefresh.js"></script>
 
     <script>
         $( document ).on( "mobileinit", function() {
@@ -44,12 +45,12 @@
         <a href="index.html" data-transition="slide" data-icon="arrow-l">Back</a>
         <h1>Friend</h1>
     </div>
-    <div ng-include src="'app/views/friend-list.html'"></div>
+    <div ng-include src="'app/views/friend-list.html'" data-role="content" id="list-friend-parent"></div>
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">
             <ul>
                 <li>
-                    <a data-transition="slide" data-role="button" data-icon="plus" id="add-friend" ng-click="addFriend()">Add</a>
+                    <a data-transition="slide" data-role="button" data-icon="plus" id="add-friend" ng-click="addFriend($event)">Add</a>
                 </li>
             </ul>
         </div>
