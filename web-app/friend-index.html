@@ -11,23 +11,23 @@
     <link rel="stylesheet" href="css/jquery/mobiscroll-2.3.1.custom.min.css" type="text/css"/>
 
     <script src="js/grails/energize.js"></script>
-    <script src="js/jquery/jquery-1.8.2.min.js"></script>
-    <script src="js/jquery/jquery.validationEngine.js"></script>
-    <script src="js/jquery/jquery.validationEngine-en.js"></script>
+    <script src="js/lib/jquery/jquery-1.8.2.min.js"></script>
+    <script src="js/lib/jquery/jquery.validationEngine.js"></script>
+    <script src="js/lib/jquery/jquery.validationEngine-en.js"></script>
     <script src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
-    <script src="js/jquery/jquery.atmosphere.js" type="text/javascript" ></script>
+    <script src="js/lib/jquery/jquery.atmosphere.js" type="text/javascript" ></script>
 
-    <script src="js/jquery/jquery-1.8.2.min.js"></script>
+    <script src="js/lib/jquery/jquery-1.8.2.min.js"></script>
     <script src="js/grails/energize.js"></script>
-    <script src="js/jquery/jquery.mobile-1.2.0.min.js"></script>
-    <script src="js/jquery/mobiscroll-2.3.1.custom.min.js"></script>
+    <script src="js/lib/jquery/jquery.mobile-1.2.0.min.js"></script>
+    <script src="js/lib/jquery/mobiscroll-2.3.1.custom.min.js"></script>
 
-    <script src="app/scripts/vendor/angular.js"></script>
-    <script src="app/scripts/app.js"></script>
-    <script src="app/scripts/controllers/friendcontroller.js"></script>
-    <script src="app/services/friend.js"></script>
-    <script src="app/directives/listrefresh.js"></script>
-
+    <script src="js/lib/angular/angular.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/controllers/friendcontroller.js"></script>
+    <script src="js/services/friend.js"></script>
+    <script src="js/directives/listrefresh.js"></script>
+    <script src="js/directives/createrefresh.js"></script>
     <script>
         $( document ).on( "mobileinit", function() {
             $.mobile.allowCrossDomainPages = true;
@@ -36,16 +36,16 @@
         });
     </script>
 
-    <script data-main="js/require/main-friend" src="js/require/require.js"></script>
+    <script data-main="js/tagmyfriends/main-friend" src="js/lib/require/require.js"></script>
 </head>
 <body ng-app="friend" ng-controller="FriendCtrl">
 
-<section data-role="page" id="section-list-friend">
+<section data-role="page" id="section-list-friend" create-refresh="friend">
     <div data-role="header" data-position="fixed">
         <a href="index.html" data-transition="slide" data-icon="arrow-l">Back</a>
         <h1>Friend</h1>
     </div>
-    <div ng-include src="'app/views/friend-list.html'" data-role="content" id="list-friend-parent"></div>
+    <div ng-include src="'js/views/friend-list.html'" data-role="content" id="list-friend-parent"></div>
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">
             <ul>
@@ -58,7 +58,7 @@
 </section>
 
 <section data-role="page" id="section-show-friend">
-    <div ng-include src="'app/views/friend-edit.html'"></div>
+    <div ng-include src="'js/views/friend-edit.html'"></div>
 </section>
 
 </body>

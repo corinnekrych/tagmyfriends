@@ -19,14 +19,3 @@ var friend = angular.module('friend', [])
 //        })
 }]);
 
-//http://stackoverflow.com/questions/14544741/angularjs-directive-to-stoppropagation
-//.directive('stopEvent', function () {
-//    return {
-//        restrict: 'A',
-//        link: function (scope, element, attr) {
-//            element.bind(attr.stopEvent, function (e) {
-//                e.stopPropagation();
-//            });
-//        }
-//    };
-

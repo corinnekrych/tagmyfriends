@@ -48,7 +48,7 @@ friend.controller('FriendCtrl', function ($scope, $http, friend) {
                     return false;
                 }
                 $scope.friends[item.id] = item;
-
+                //TODO remove
                 $.mobile.changePage($('#section-list-friend'));
             }).error(function(item, status, headers, config) {
 
