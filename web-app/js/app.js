@@ -2,20 +2,24 @@
 
 var tagmyfriends = angular.module('tagmyfriends', [])
   .config(['$routeProvider', function($routeProvider) {
-//    $routeProvider
-//      .when('/', {
-//        templateUrl: 'app/views/main.html',
-//       controller: 'MainCtrl'
-//      })
   }]);
 
 var friend = angular.module('friend', [])
     .config(['$routeProvider', '$locationProvider', function ($routeProvider, $locationProvider) {
     $locationProvider.html5Mode(true);
-//    $routeProvider
+    $routeProvider
 //        .when('/', {
-//            templateUrl: 'app/views/friend.html',
+//            templateUrl: 'js/views/friend-list.html',
 //            controller: 'FriendCtrl'
 //        })
+//        .when('/friend/:friendId', {
+//            templateUrl: 'js/views/friend-edit.html',
+//            controller: 'FriendCtrl'
+//        })
+//        .when('/friend', {
+//            templateUrl: 'js/views/friend-edit.html',
+//            controller: 'FriendCtrl'
+//        })
+
 }]);
 

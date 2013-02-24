@@ -28,6 +28,7 @@
     <script src="js/services/friend.js"></script>
     <script src="js/directives/listrefresh.js"></script>
     <script src="js/directives/createrefresh.js"></script>
+    <script src="js/directives/jqm-reset.js"></script>
     <script>
         $( document ).on( "mobileinit", function() {
             $.mobile.allowCrossDomainPages = true;
@@ -40,12 +41,13 @@
 </head>
 <body ng-app="friend" ng-controller="FriendCtrl">
 
-<section data-role="page" id="section-list-friend" create-refresh="friend">
+<section data-role="page" create-refresh="friend" id="section-list-friend">
     <div data-role="header" data-position="fixed">
         <a href="index.html" data-transition="slide" data-icon="arrow-l">Back</a>
         <h1>Friend</h1>
     </div>
     <div ng-include src="'js/views/friend-list.html'" data-role="content" id="list-friend-parent"></div>
+    <!--<div ng-view data-role="content" id="list-friend-parent"></div>-->
     <div data-role="footer" data-position="fixed">
         <div data-role="navbar">
             <ul>

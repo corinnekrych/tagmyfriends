@@ -12,29 +12,30 @@ friend.controller('FriendCtrl', function ($scope, $http, friend) {
     });
 
     var createElement = function () {
-        resetForm('form-update-friend');
         $scope.friend = {};
         $.mobile.changePage($('#section-show-friend'));
         $('#delete-friend').css('display', 'none');
     };
 
-    var resetForm = function (form) {
-        $('input[data-type="date"]').each(function () {
-            $(this).scroller('destroy').scroller({
-                preset:'date',
-                theme:'default',
-                display:'modal',
-                mode:'scroller',
-                dateOrder:'mmD ddyy'
-            });
-        });
-    };
-
     $scope.addFriend = function (event) {
         event.stopPropagation();
-        //$('#form-update-friend').validationEngine('hide');
-        //$('#form-update-friend').validationEngine({promptPosition:'bottomLeft'});
+//        $('#form-update-friend').validationEngine('hide');
+//        $('#form-update-friend').validationEngine({promptPosition:'bottomLeft'});
         createElement();
+    };
+
+
+    $scope.showElement = function (id) {
+        var element = $scope.friends[id];
+        $.each(element, function (name, value) {
+            var input = $('#input-friend-' + name);
+            input.val(value);
+            if (input.attr('data-type') == 'date') {
+                input.scroller('setDate', (value === '') ? '' : new Date(value), true);
+            }
+        });
+        $('#delete-friend').show();
+        $.mobile.changePage($('#section-show-friend'));
     };
 
     $scope.create = function (event) {
@@ -56,7 +57,4 @@ friend.controller('FriendCtrl', function ($scope, $http, friend) {
             });
     };
 
-    $scope.$on('$includeContentLoaded', function () {
-        $('#section-list-friend').trigger("create");
-    });
 });
