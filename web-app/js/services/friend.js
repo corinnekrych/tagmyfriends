@@ -1,6 +1,6 @@
 'use strict';
 
-friend.factory('friend', function() {
-    var friend = {};
-    return friend;
+friend.factory('friends', function() {
+    var friends = {};
+    return friends;
 });

@@ -1,26 +1,45 @@
-    <div ng-include src="'js/views/friend-header.html'"></div>
-    <form id="form-update-friend" name="form-update-friend">
+<div data-role="content">
+    <form id="form-update-friend" name="formUpdateFriend">
+
+
+        <!--<tt>text = {{friends[currentId].firstname}}</tt><br/>-->
+        <!--<tt>form-update-friend.firstname.$valid = {{formUpdateFriend.firstname.$valid}}</tt><br/>-->
+        <!--<tt>form-update-friend.firstname.$error = {{formUpdateFriend.firstname.$error}}</tt><br/>-->
+        <!--<tt>form-update-friend.$valid = {{formUpdateFriend.$valid}}</tt><br/>-->
+        <!--<tt>form-update-friend.$error.required = {{!!formUpdateFriend.$error.required}}</tt><br/>-->
+
         <ul data-role="listview" data-inset="true">
             <li data-role="fieldcontain">
                 <label for="input-friend-firstname">Firstname</label>
-                <input ng-model="friend.firstname" type="text" class="validate[required]" name="firstname" id="input-friend-firstname" value=""/>
-
+                <input required ng-minlength="5" ng-model="friends[currentId].firstname" type="text" name="firstname"
+                       id="input-friend-firstname" value=""/>
+                <div ng-show="formUpdateFriend.firstname.$error.required" class="input-help">
+                    <h4>Firstname is required</h4>
+                </div>
+                <div ng-show="formUpdateFriend.firstname.$error.minlength" class="input-help">
+                    <h4>Minimun length of 5</h4>
+                </div>
             </li>
             <li data-role="fieldcontain">
                 <label for="input-friend-lastname">Lastname</label>
-                <input ng-model="friend.lastname" type="text" class="validate[required]" name="lastname" id="input-friend-lastname" value=""/>
-
+                <input required ng-model="friends[currentId].lastname" type="text" name="lastname"
+                       id="input-friend-lastname" value=""/>
+                <div ng-show="formUpdateFriend.lastname.$error.required" class="input-help">
+                    <h4>Lastname is required</h4>
+                </div>
             </li>
             <li jqm-reset="friend" data-role="fieldcontain">
                 <label for="input-friend-registrationDate">Registration Date</label>
-                <input ng-model="friend.registrationDate" type="text" data-type="date" class="validate[required]" name="registrationDate" id="input-friend-registrationDate" value=""/>
-
+                <input required ng-model="friends[currentId].registrationDate" type="text" data-type="date"
+                       name="registrationDate" id="input-friend-registrationDate" value=""/>
+                <div ng-show="formUpdateFriend.registrationDate.$error.required" class="input-help">
+                    <h4>Date is required</h4>
+                </div>
             </li>
         </ul>
-        <h1>{{friend.firstname}}-{{friend.lastname}}</h1>
-        <input ng-model="friend.id" type="hidden" name="id" id="input-friend-id"/>
-        <input ng-model="friend.version" type="hidden" name="version" id="input-friend-version"/>
-        <input ng-model="friend.class" type="hidden" name="class" id="input-friend-class"/>
-    </form>
 
-    <div ng-include src="'js/views/friend-footer.html'"></div>
+        <input ng-model="friends[currentId].id" type="hidden" name="id" id="input-friend-id"/>
+        <input ng-model="friends[currentId].version" type="hidden" name="version" id="input-friend-version"/>
+        <input ng-model="friends[currentId].class" type="hidden" name="class" id="input-friend-class"/>
+    </form>
+</div>

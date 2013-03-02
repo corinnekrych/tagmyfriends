@@ -1,3 +1,9 @@
-   <ul data-role="listview" data-inset="true" data-filter="true" id="list-friends">
-       <li list-refresh="friends" ng-repeat="item in friends"><a ng-click="showElement({{item.id}})" id="friend-list-{{item.id}}" data-id="{{item.id}}" data-transition="fade">{{item.lastname}} - {{item.firstname}} - {{item.registrationDate}}</a></li>
+<div data-role="content" id="list-friend-parent">
+    <ul data-role="listview" data-inset="true" data-filter="true" id="list-friends">
+       <li list-refresh="list-friends" ng-repeat="item in friends">
+           <a ng-click="clicked(item.id)"
+              href="#section-show-friend"
+              data-transition="fade">{{item.lastname}} - {{item.firstname}} - {{item.registrationDate}}</a>
+       </li>
    </ul>
+</div>

@@ -1,11 +1,48 @@
-    <div data-role="footer" data-position="fixed">
-        <div data-role="navbar">
-            <ul>
-                <li>
-                    <a data-transition="slide" data-role="button" data-icon="delete" id="delete-friend">Delete</a>
+    <!--<div  id="footer" data-role="footer" data-position="fixed">-->
+        <!--<div data-role="navbar">-->
+            <!--<ul id="footer-list">-->
+                <!--<li>-->
+                    <!--<a ng-show="actionButton == 'UPDATE'" ng-click="delete($event)" data-transition="slide" data-role="button" data-icon="delete" id="delete-friend">Delete</a>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<a ng-click="dispatch($event)" data-transition="slide" data-role="button" data-icon="save" id="submit-friend">-->
+                        <!--<span ng-show="actionButton == 'ADD'">Add</span>-->
+                        <!--<span ng-show="actionButton == 'UPDATE'">Save</span>-->
+                        <!--<span ng-show="actionButton == 'CREATE'">Save</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+            <!--</ul>-->
+        <!--</div>-->
+
+        <!---->
+        <!---->
+        <!---->
+    <!--</div>-->
+
+
+    <div id="footer" data-role="footer" data-position="fixed">
+        <div ng-switch on="actionButton" data-role="navbar">
+            <ul id="footer-list" ng-switch-when="UPDATE">
+                <li> <a  ng-click="delete($event)" data-transition="slide" data-role="button" data-icon="delete" id="delete-friend">Delete</a>
+
                 </li>
-                <li>
-                    <a ng-click="create($event)" data-transition="slide" data-role="button" data-icon="save" id="submit-friend">Save</a>
+                <li> <a ng-click="dispatch($event)" data-transition="slide" data-role="button" data-icon="save" id="submit-friend">Save</a>
+
+                </li>
+            </ul>
+            <ul id="footer-list" ng-switch-when="ADD">
+
+                <li> <a ng-click="dispatch($event)" data-transition="slide" data-role="button" data-icon="save" id="submit-friend">Add</a>
+
+                </li>
+            </ul>
+            <ul id="footer-list" ng-switch-when="CREATE">
+                <li> <a ng-click="dispatch($event)" style="display: none" data-transition="slide" data-role="button" data-icon="delete"
+                        id="delete-friend">Delete</a>
+
+                </li>
+                <li> <a ng-click="dispatch($event)" data-transition="slide" data-role="button" data-icon="save" id="submit-friend">Save</a>
+
                 </li>
             </ul>
         </div>
