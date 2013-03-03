@@ -8,10 +8,10 @@
         <!--<tt>form-update-friend.$valid = {{formUpdateFriend.$valid}}</tt><br/>-->
         <!--<tt>form-update-friend.$error.required = {{!!formUpdateFriend.$error.required}}</tt><br/>-->
 
-        <ul data-role="listview" data-inset="true">
+        <ul validate="friends[currentId].firstname" action="{{actionButton}}" data-role="listview" data-inset="true">
             <li data-role="fieldcontain">
                 <label for="input-friend-firstname">Firstname</label>
-                <input required ng-minlength="5" ng-model="friends[currentId].firstname" type="text" name="firstname"
+                <input required ng-minlength="8" ng-model="friends[currentId].firstname" type="text" name="firstname"
                        id="input-friend-firstname" value=""/>
                 <div ng-show="formUpdateFriend.firstname.$error.required" class="input-help">
                     <h4>Firstname is required</h4>
@@ -41,5 +41,6 @@
         <input ng-model="friends[currentId].id" type="hidden" name="id" id="input-friend-id"/>
         <input ng-model="friends[currentId].version" type="hidden" name="version" id="input-friend-version"/>
         <input ng-model="friends[currentId].class" type="hidden" name="class" id="input-friend-class"/>
+
     </form>
 </div>

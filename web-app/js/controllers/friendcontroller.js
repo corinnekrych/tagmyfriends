@@ -30,8 +30,10 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
            event.stopPropagation();
         }
         $scope.actionButton = "ADD";
+        delete $scope.friends[0];
+        $scope.currentId = 0;
         $.mobile.changePage($('#section-list-friend'));
-    }
+    };
 
     //------------ Update item -----------------
     $scope.clicked = function (val) {
@@ -59,9 +61,8 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
 
     //------------ Add new item -----------------
     var addItem = function () {
-        $scope.friends[0] = {};
+        $scope.friends[0] = {firstname:''};
         $.mobile.changePage($('#section-show-friend'));
-        $('#delete-friend').css('display', 'none');
         $scope.actionButton = "CREATE";
     };
 
