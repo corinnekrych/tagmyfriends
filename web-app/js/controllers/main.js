@@ -1,8 +1,8 @@
-'use strict';
-
-tagmyfriends.controller('MainCtrl', function($scope) {
-
-    $scope.$on('$includeContentLoaded', function() {
-        $('#myList').parent().trigger('create');
-    });
-});
+//'use strict';
+//
+//tagmyfriends.controller('MainCtrl', function($scope) {
+//
+//    $scope.$on('$includeContentLoaded', function() {
+//        $('#myList').parent().trigger('create');
+//    });
+//});
