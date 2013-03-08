@@ -1,20 +1,31 @@
 'use strict';
 
-friend.controller('FriendCtrl', function ($scope, $http, friends) {
+friend.controller('FriendCtrl', function ($scope, $http, friends, $) {
     //$scope.friend = friend;
     $scope.friends = friends;
     $scope.currentId = 0;
     $scope.actionButton = "ADD";
 
     $http.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
-    $http.get('http://localhost:8080/tagmyfriends/friend/list').success(function (data) {
-        for (var i = 0; i < data.length; i++) {
-            var element = data[i];
-            $scope.friends[element.id] = element;
-        }
-    });
+
+    $scope.init = function () {
+        $http.get('http://localhost:8080/tagmyfriends/friend/list').success(function (data) {
+            for (var i = 0; i < data.length; i++) {
+                var element = data[i];
+                if (element) {
+                    $scope.friends[element.id] = element;
+                }
+
+            }
+        });
+    };
+
+    $scope.init();
+
     $scope.dispatch = function (event) {
-        event.stopPropagation();
+        if (event) {
+            event.stopPropagation();
+        }
         if ($scope.actionButton == 'ADD') {
             addItem();
         } else if ($scope.actionButton == 'UPDATE') {
@@ -42,7 +53,10 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
     };
 
     var updateItem = function () {
-        $scope.friends[$scope.currentId].registrationDate = $('#input-friend-registrationDate').scroller('getDate', true);
+        //TODO remove view specific code to directive
+        if ($('#input-friend-registrationDate')) {
+          $scope.friends[$scope.currentId].registrationDate =  $('#input-friend-registrationDate').scroller('getDate', true);
+        }
         var toJson = {friend:JSON.stringify($scope.friends[$scope.currentId])};
         toJson = $.param(toJson);
         $http.post("http://localhost:8080/tagmyfriends/friend/update", toJson)
@@ -53,7 +67,7 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
                 $scope.gotoList();
                 $.mobile.changePage($('#section-list-friend'));
             }).error(function (item, status, headers, config) {
-
+                //var eltOnError = item;
 
             });
     };
@@ -67,7 +81,10 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
     };
 
     var createItem = function () {
-        $scope.friends[0].registrationDate = $('#input-friend-registrationDate').scroller('getDate', true);
+        //TODO remove view specific code to directive
+        if ($('#input-friend-registrationDate')) {
+            $scope.friends[$scope.currentId].registrationDate =  $('#input-friend-registrationDate').scroller('getDate', true);
+        }
         var toJson = {friend:JSON.stringify($scope.friends[0])};
         toJson = $.param(toJson);
         $http.post("http://localhost:8080/tagmyfriends/friend/save", toJson)
@@ -87,7 +104,9 @@ friend.controller('FriendCtrl', function ($scope, $http, friends) {
 
     //------------ Delete item -----------------
     $scope.delete = function (event) {
-        event.stopPropagation();
+        if (event) {
+            event.stopPropagation();
+        }
         deleteItem();
     };
 
